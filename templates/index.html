@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skin Tone Detector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        video {
+            border: 2px solid black;
+            width: 50%;
+        }
+        .info {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Skin Tone Detector</h1>
+
+    <img src="{{ url_for('video_feed') }}" id="video-feed">
+
+    <div class="info">
+        <p>Detected Skin Tone: <span id="skin-tone">Waiting...</span></p>
+    </div>
+
+    <button id="toggle-button">Disable Bounding Box</button>
+
+    <script>
+        function fetchSkinTone() {
+            fetch('/get_skin_tone')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.skin_tone) {
+                        document.getElementById('skin-tone').innerText = `RGB: ${data.skin_tone}`;
+                    } else {
+                        document.getElementById('skin-tone').innerText = "No face detected";
+                    }
+                })
+                .catch(error => console.error("Error fetching skin tone:", error));
+        }
+
+        document.getElementById('toggle-button').addEventListener('click', function () {
+            fetch('/toggle_box', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.show_bounding_box) {
+                        document.getElementById('toggle-button').innerText = "Disable Bounding Box";
+                    } else {
+                        document.getElementById('toggle-button').innerText = "Enable Bounding Box";
+                    }
+                })
+                .catch(error => console.error("Error toggling bounding box:", error));
+        });
+
+        setInterval(fetchSkinTone, 2000);
+    </script>
+</body>
+</html>
